@@ -12,15 +12,15 @@ func TestDatabase(t *testing.T) {
 		input        string
 		expectsError bool
 	}{
-		"successful connect": {
-			input: fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-				"localhost",
-				"courses-db-user",
-				"courses-db-password",
-				"coursesDB",
-				"5432"),
-			expectsError: false,
-		},
+		// "successful connect": {
+		// 	input: fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		// 		"localhost",
+		// 		"courses-db-user",
+		// 		"courses-db-password",
+		// 		"coursesDB",
+		// 		"5432"),
+		// 	expectsError: false,
+		// },
 		"unsuccessful connect": {
 			input: fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 				"",

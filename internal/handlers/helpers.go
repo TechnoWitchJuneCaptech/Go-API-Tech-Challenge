@@ -10,18 +10,16 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func formatName(name string) (string, string, error) {
-	firstName, lastName := "", ""
+// turns name into a firstName and lastName for querying.
+func formatName(name string) (firstName string, lastName string, err error) {
+	firstName, lastName = "", ""
 	if name != "" {
 		nameArr := strings.Fields(name)
 		if len(nameArr) != 2 {
 			return "", "", fmt.Errorf("must have a first and last name")
 		}
-		//capitalizing names for queries
 		firstName = nameArr[0]
-		firstName = strings.ToUpper(string(firstName[0])) + strings.ToLower(string(firstName[1:]))
 		lastName = nameArr[1]
-		lastName = strings.ToUpper(string(lastName[0])) + strings.ToLower(string(lastName[1:]))
 		return firstName, lastName, nil
 	}
 	return "", "", fmt.Errorf("name is empty")

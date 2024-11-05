@@ -53,7 +53,7 @@ func (s *testSuit) TestGetAllPeopleNameAgeSuccess() {
 	age := 18
 	returnFinal := []models.Person{{ID: 3, FirstName: "Bubbles", LastName: "Thane", Type: "professor", Age: 18, Courses: []int{1, 2, 3}}}
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2 AND age = $3`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) AND age = $3`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName, age).WillReturnRows(returnRowsPersonQuery).WillReturnError(nil)
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(returnRowsMapQuery).WillReturnError(nil)
@@ -97,7 +97,7 @@ func (s *testSuit) TestGetAllPeopleNameSuccess() {
 	age := -1
 	returnFinal := []models.Person{{ID: 3, FirstName: "Bubbles", LastName: "Thane", Type: "professor", Age: 18, Courses: []int{1, 2, 3}}}
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2)`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(returnRowsPersonQuery).WillReturnError(nil)
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(returnRowsMapQuery).WillReturnError(nil)
@@ -334,7 +334,7 @@ func (s *testSuit) TestGetPersonExistsSuccess() {
 	lastName := "Thane"
 	returnFinal := models.Person{ID: 3, FirstName: "Bubbles", LastName: "Thane", Type: "professor", Age: 18, Courses: []int{1, 2, 3}}
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(returnRowsPersonQuery).WillReturnError(nil)
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(returnRowsMapQuery).WillReturnError(nil)
@@ -352,7 +352,7 @@ func (s *testSuit) TestGetPersonDoesntExistSuccess() {
 	lastName := "NotAProfessor"
 	returnFinal := models.Person{}
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(&sqlmock.Rows{}).WillReturnError(nil)
 	result, err := s.personService.GetPerson(firstName, lastName)
 
@@ -377,7 +377,7 @@ func (s *testSuit) TestGetPersonGetPersonFailure() {
 	returnFinal := models.Person{}
 	returnErr := fmt.Errorf("failed to get person: %w", errors.New("can't get person"))
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(returnRowsPersonQuery).WillReturnError(errors.New("can't get person"))
 	result, err := s.personService.GetPerson(firstName, lastName)
 
@@ -418,7 +418,7 @@ func (s *testSuit) TestGetPersonGetCourseFailure() {
 	returnFinal := models.Person{}
 	returnErr := fmt.Errorf("failed to get courses for person: %w", errors.New("can't get course"))
 
-	query := `SELECT * FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query := `SELECT * FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(returnRowsPersonQuery).WillReturnError(nil)
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(returnRowsMapQuery).WillReturnError(errors.New("can't get course"))
@@ -480,9 +480,9 @@ func (s *testSuit) TestUpdatePersonChangeAllSuccess() {
 	returnPerson := inputPerson
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -509,7 +509,7 @@ func (s *testSuit) TestUpdatePersonNotFoundFailure() {
 	returnPerson := models.Person{}
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 0))
 
 	updatedPerson, err := s.personService.UpdatePerson("Bubbles", "Thane", personInput)
@@ -527,7 +527,7 @@ func (s *testSuit) TestUpdatePersonUpdatePersonFailure() {
 	returnPerson := models.Person{}
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 0)).WillReturnError(errors.New("can't update person"))
 
 	updatedPerson, err := s.personService.UpdatePerson("Bubbles", "Thane", personInput)
@@ -545,9 +545,9 @@ func (s *testSuit) TestUpdatePersonGetIDFailure() {
 	returnPerson := models.Person{}
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}})).WillReturnError(errors.New("can't get ID"))
 
 	updatedPerson, err := s.personService.UpdatePerson("Bubbles", "Thane", inputPerson)
@@ -580,9 +580,9 @@ func (s *testSuit) TestUpdatePersonGetMapListFailure() {
 	returnErr := fmt.Errorf("failed to retreive course list: %w", errors.New("can't get map"))
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:])).WillReturnError(errors.New("can't get map"))
@@ -617,9 +617,9 @@ func (s *testSuit) TestUpdatePersonDeleteCoursesFailure() {
 	returnErr := fmt.Errorf("failed to update course list: %w", errors.New("can't delete"))
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -656,9 +656,9 @@ func (s *testSuit) TestUpdatePersonGetCourseListFailure() {
 	returnErr := fmt.Errorf("failed to retreive course list: %w", errors.New("can't get courses"))
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -697,9 +697,9 @@ func (s *testSuit) TestUpdatePersonCourseNotFoundFailure() {
 	returnErr := fmt.Errorf("course not found, trying to join a course that doesn't exist")
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -738,9 +738,9 @@ func (s *testSuit) TestUpdatePersonUpdateCoursesFailure() {
 	returnErr := fmt.Errorf("failed to update course list: %w", errors.New("can't update courses"))
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -796,9 +796,9 @@ func (s *testSuit) TestUpdatePersonTransactionCommitFailure() {
 	returnErr := fmt.Errorf("failed to commit transaction: %w", errors.New("commit failed"))
 
 	s.dbMock.ExpectBegin()
-	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE "first_name" = $5 AND "last_name" = $6`
+	query := `UPDATE "person" SET "first_name" = $1, "last_name" = $2, "type" = $3, "age" = $4 WHERE LOWER(first_name) = LOWER($5) AND LOWER(last_name) = LOWER($6)`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(updateInput...).WillReturnResult(sqlmock.NewResult(3, 1))
-	query = `SELECT id FROM "person" WHERE first_name = $1 AND last_name = $2 LIMIT 1`
+	query = `SELECT id FROM "person" WHERE LOWER(first_name) = LOWER($1) AND LOWER(last_name) = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("Bubbly", "Thane").WillReturnRows(testutil.MustStructsToRows([]ID{{ID: 3}}))
 	query = `SELECT * FROM "person_course" WHERE person_id = $1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(3).WillReturnRows(testutil.MustStructsToRows(person_course[9:]))
@@ -991,7 +991,7 @@ func (s *testSuit) TestDeletePersonSuccess() {
 	queryReturn := testutil.MustStructsToRows([]ID{{ID: personID}})
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn)
 	query = `DELETE FROM "person_course" WHERE "person_id" = $1`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(personID).WillReturnResult(sqlmock.NewResult(1, 1))
@@ -1017,7 +1017,7 @@ func (s *testSuit) TestDeletePersonGetIDFailure() {
 	expectedRowsAffected := int64(-1)
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn).WillReturnError(errors.New("can't get IDs"))
 
 	rowsAffected, err := s.personService.DeletePerson(firstName, lastName)
@@ -1037,7 +1037,7 @@ func (s *testSuit) TestDeletePersonNotFoundFailure() {
 	expectedErr := fmt.Errorf("person not found")
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn)
 
 	rowsAffected, err := s.personService.DeletePerson(firstName, lastName)
@@ -1058,7 +1058,7 @@ func (s *testSuit) TestDeletePersonDeleteCourseFailure() {
 	expectedRowsAffected := int64(-1)
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn)
 	query = `DELETE FROM "person_course" WHERE "person_id" = $1`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(personID).WillReturnResult(sqlmock.NewResult(1, 1)).WillReturnError(errors.New("can't delete courses"))
@@ -1081,7 +1081,7 @@ func (s *testSuit) TestDeletePersonFailure() {
 	expectedRowsAffected := int64(-1)
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn)
 	query = `DELETE FROM "person_course" WHERE "person_id" = $1`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(personID).WillReturnResult(sqlmock.NewResult(1, 1))
@@ -1122,7 +1122,7 @@ func (s *testSuit) TestDeletePersonTransactionCommitFailure() {
 	queryReturn := testutil.MustStructsToRows([]ID{{ID: personID}})
 
 	s.dbMock.ExpectBegin()
-	query := `SELECT id FROM "person" WHERE "first_name" = $1 AND "last_name" = $2 LIMIT 1`
+	query := `SELECT id FROM "person" WHERE LOWER("first_name") = LOWER($1) AND LOWER("last_name") = LOWER($2) LIMIT 1`
 	s.dbMock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(firstName, lastName).WillReturnRows(queryReturn)
 	query = `DELETE FROM "person_course" WHERE "person_id" = $1`
 	s.dbMock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(personID).WillReturnResult(sqlmock.NewResult(1, 1))

@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -14,8 +12,11 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func GetAllPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	p := services.NewPersonService(db)
+type PersonHandler struct {
+	PersonService services.PersonService
+}
+
+func (p *PersonHandler) GetAllPeople(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	name := params.Get("name")
 	var age = -1
@@ -30,7 +31,7 @@ func GetAllPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 	}
-	if age <= 0 && params.Has("age") {
+	if age < 0 && params.Has("age") {
 		logError(r, "bad request: age must be greater than 0", http.StatusBadRequest)
 		http.Error(w, "bad request: age must be greater than 0", http.StatusBadRequest)
 		return
@@ -47,7 +48,7 @@ func GetAllPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 	}
 
-	people, err := p.GetAllPeople(age, firstName, lastName)
+	people, err := p.PersonService.GetAllPeople(age, firstName, lastName)
 	if err != nil {
 		logError(r, "internal error: "+err.Error(), http.StatusInternalServerError)
 		http.Error(w, "internal error: "+err.Error(), http.StatusInternalServerError)
@@ -60,8 +61,7 @@ func GetAllPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 }
-func GetPerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	p := services.NewPersonService(db)
+func (p *PersonHandler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
 	if name == "" {
@@ -75,7 +75,7 @@ func GetPerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	person, err := p.GetPerson(firstName, lastName)
+	person, err := p.PersonService.GetPerson(firstName, lastName)
 	if err != nil {
 		logError(r, "internal error: "+err.Error(), http.StatusInternalServerError)
 		http.Error(w, "internal error: "+err.Error(), http.StatusInternalServerError)
@@ -93,8 +93,7 @@ func GetPerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 }
-func UpdatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	p := services.NewPersonService(db)
+func (p *PersonHandler) UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	if name == "" {
 		logError(r, "bad request: name required", http.StatusBadRequest)
@@ -127,9 +126,16 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "validation for person object failed", http.StatusBadRequest)
 		return
 	}
-	updatedPerson, err := p.UpdatePerson(firstName, lastName, person)
+	person.FirstName, person.LastName, err = formatName(person.FirstName + " " + person.LastName)
+	if err != nil {
+		logError(r, "bad request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "bad request: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedPerson, err := p.PersonService.UpdatePerson(firstName, lastName, person)
 	if err != nil && (err.Error() == "person not found" ||
-		err.Error() == "course not found, trying to join a coure that doesn't exist") {
+		err.Error() == "course not found, trying to join a course that doesn't exist") {
 		logError(r, err.Error(), http.StatusNotFound)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -146,8 +152,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 }
-func CreatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	p := services.NewPersonService(db)
+func (p *PersonHandler) CreatePerson(w http.ResponseWriter, r *http.Request) {
 	var person models.Person
 	err := json.NewDecoder(r.Body).Decode(&person)
 	if err != nil {
@@ -168,7 +173,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "validation for person object failed", http.StatusBadRequest)
 		return
 	}
-	insertedID, err := p.CreatePerson(person)
+	insertedID, err := p.PersonService.CreatePerson(person)
 	if err != nil {
 		logError(r, "failed to create person: "+err.Error(), http.StatusInternalServerError)
 		http.Error(w, "failed to create person: "+err.Error(), http.StatusInternalServerError)
@@ -181,8 +186,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 }
-func DeletePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	p := services.NewPersonService(db)
+func (p *PersonHandler) DeletePerson(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
 	if name == "" {
@@ -196,9 +200,7 @@ func DeletePerson(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	deletedPersonCount, err := p.DeletePerson(firstName, lastName)
-	fmt.Println(deletedPersonCount)
-	fmt.Println(err)
+	deletedPersonCount, err := p.PersonService.DeletePerson(firstName, lastName)
 	if deletedPersonCount == 0 || (err != nil && err.Error() == "person not found") {
 		logError(r, "person not found", http.StatusNotFound)
 		http.Error(w, "person not found", http.StatusNotFound)

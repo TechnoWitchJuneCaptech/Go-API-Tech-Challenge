@@ -11,7 +11,7 @@ import (
 type testSuit struct {
 	suite.Suite
 	realCourseService *RealCourseService
-	personService     *PersonService
+	personService     *RealPersonService
 	dbMock            sqlmock.Sqlmock
 }
 type Person_Course struct {

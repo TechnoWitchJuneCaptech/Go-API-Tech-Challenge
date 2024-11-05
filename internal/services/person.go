@@ -10,16 +10,24 @@ import (
 	"github.com/lib/pq"
 )
 
-type PersonService struct {
+type PersonService interface {
+	GetAllPeople(int, string, string) ([]models.Person, error)
+	GetPerson(string, string) (models.Person, error)
+	UpdatePerson(string, string, models.Person) (models.Person, error)
+	CreatePerson(models.Person) (int, error)
+	DeletePerson(string, string) (int64, error)
+}
+
+type RealPersonService struct {
 	db *sql.DB
 }
 
-func NewPersonService(db *sql.DB) *PersonService {
-	return &PersonService{
+func NewPersonService(db *sql.DB) *RealPersonService {
+	return &RealPersonService{
 		db: db,
 	}
 }
-func (p PersonService) GetAllPeople(age int, firstName string, lastName string) ([]models.Person, error) {
+func (p *RealPersonService) GetAllPeople(age int, firstName string, lastName string) ([]models.Person, error) {
 	var err error
 
 	var rows *sql.Rows
@@ -72,10 +80,10 @@ func (p PersonService) GetAllPeople(age int, firstName string, lastName string) 
 	}
 	return people, nil
 }
-func (p PersonService) GetPerson(firstName string, lastName string) (models.Person, error) {
+func (p *RealPersonService) GetPerson(firstName string, lastName string) (models.Person, error) {
 	rows, err := p.db.Query(`SELECT * FROM "person" 
-	WHERE first_name = $1
-	AND last_name = $2
+	WHERE LOWER(first_name) = LOWER($1)
+	AND LOWER(last_name) = LOWER($2)
 	LIMIT 1`,
 		firstName,
 		lastName)
@@ -116,7 +124,7 @@ func (p PersonService) GetPerson(firstName string, lastName string) (models.Pers
 }
 
 // This is really bad architecture. Because firstName and lastName do not constitute a unique key, this function could update the wrong user.
-func (p PersonService) UpdatePerson(firstName string, lastName string, person models.Person) (models.Person, error) {
+func (p *RealPersonService) UpdatePerson(firstName string, lastName string, person models.Person) (models.Person, error) {
 	tx, err := p.db.Begin()
 	if err != nil {
 		return models.Person{}, fmt.Errorf("failed to begin transaction: %w", err)
@@ -132,8 +140,8 @@ func (p PersonService) UpdatePerson(firstName string, lastName string, person mo
 		"last_name" = $2,
 		"type" = $3,
 		"age" = $4
-	WHERE "first_name" = $5
-		AND "last_name" = $6`,
+	WHERE LOWER(first_name) = LOWER($5)
+		AND LOWER(last_name) = LOWER($6)`,
 		person.FirstName,
 		person.LastName,
 		person.Type,
@@ -156,8 +164,8 @@ func (p PersonService) UpdatePerson(firstName string, lastName string, person mo
 
 	//1. do a select to get ID
 	rows, err := tx.Query(`SELECT id FROM "person"
-						WHERE first_name = $1
-						AND last_name = $2
+						WHERE LOWER(first_name) = LOWER($1)
+						AND LOWER(last_name) = LOWER($2)
 						LIMIT 1`,
 		person.FirstName,
 		person.LastName)
@@ -236,7 +244,7 @@ func (p PersonService) UpdatePerson(firstName string, lastName string, person mo
 	}
 	return person, nil
 }
-func (p PersonService) CreatePerson(person models.Person) (int, error) {
+func (p *RealPersonService) CreatePerson(person models.Person) (int, error) {
 	tx, err := p.db.Begin()
 	if err != nil {
 		return -1, fmt.Errorf("failed to begin transaction: %w", err)
@@ -307,7 +315,7 @@ func (p PersonService) CreatePerson(person models.Person) (int, error) {
 }
 
 // This is really bad architecture. Because firstName and lastName do not constitute a unique key, this function could delete multiple users.
-func (p PersonService) DeletePerson(firstName string, lastName string) (int64, error) {
+func (p *RealPersonService) DeletePerson(firstName string, lastName string) (int64, error) {
 	tx, err := p.db.Begin()
 	if err != nil {
 		return -1, fmt.Errorf("failed to begin transaction: %w", err)
@@ -320,8 +328,8 @@ func (p PersonService) DeletePerson(firstName string, lastName string) (int64, e
 
 	//get person's id
 	rows, err := tx.Query(`SELECT id FROM "person"
-						WHERE "first_name" = $1
-						AND "last_name" = $2
+						WHERE LOWER("first_name") = LOWER($1)
+						AND LOWER("last_name") = LOWER($2)
 						LIMIT 1`, firstName, lastName)
 
 	if err != nil {

@@ -4,15 +4,15 @@ import "database/sql"
 
 func dbQueryGetPeopleByName(firstName string, lastName string, db *sql.DB) (*sql.Rows, error) {
 	return db.Query(`SELECT * FROM "person" 
-					WHERE first_name = $1
-					AND last_name = $2`,
+					WHERE LOWER(first_name) = LOWER($1)
+					AND LOWER(last_name) = LOWER($2)`,
 		firstName,
 		lastName)
 }
 func dbQueryGetPeopleByNameAndAge(firstName string, lastName string, age int, db *sql.DB) (*sql.Rows, error) {
 	return db.Query(`SELECT * FROM "person" 
-					WHERE first_name = $1
-					AND last_name = $2
+					WHERE LOWER(first_name) = LOWER($1)
+					AND LOWER(last_name) = LOWER($2)
 					AND age = $3`,
 		firstName,
 		lastName,

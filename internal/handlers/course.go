@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -33,9 +32,6 @@ func (c *CourseHandler) GetAllCourses(w http.ResponseWriter, r *http.Request) {
 }
 func (c *CourseHandler) GetCourse(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
-	fmt.Println("--- In Handler Function ---")
-	fmt.Println(r.URL)
-	fmt.Println("id: " + idString)
 	idInt, err := strconv.Atoi(idString)
 	if err != nil {
 		logError(r, "bad request: cannot parse id to int", http.StatusBadRequest)
@@ -60,7 +56,6 @@ func (c *CourseHandler) GetCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 func (c *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
 	idInt, err := strconv.Atoi(idString)
@@ -101,7 +96,6 @@ func (c *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 func (c *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
 	var course models.Course
 	err := json.NewDecoder(r.Body).Decode(&course)
@@ -130,7 +124,6 @@ func (c *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 func (c *CourseHandler) DeleteCourse(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
 	idInt, err := strconv.Atoi(idString)
