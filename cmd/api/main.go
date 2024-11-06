@@ -1,5 +1,7 @@
 package main
 
+//main.go initiates the local database, local http server and shuts down gracefully in case of errors.
+
 import (
 	"context"
 	"fmt"
@@ -69,7 +71,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(cfg.HTTPShutdownDuration))
 	defer cancel()
 
-	// Attempt a graceful shutdown
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}

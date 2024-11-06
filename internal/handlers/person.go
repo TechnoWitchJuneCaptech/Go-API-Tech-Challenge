@@ -1,5 +1,7 @@
 package handlers
 
+//person.go defines the handler logic of all /api/person http endpoints.
+
 import (
 	"encoding/json"
 	"net/http"

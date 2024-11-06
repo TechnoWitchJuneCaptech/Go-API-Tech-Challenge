@@ -1,5 +1,7 @@
 package routes
 
+//routes.go defines the URL routes of all http endpoints, and what handler functions are called for each endpoint.
+
 import (
 	"database/sql"
 	"net/http"
@@ -14,6 +16,7 @@ func SetupRoutes(r chi.Router, db *sql.DB) {
 	c.CourseService = services.NewCourseService(db)
 	p := new(handlers.PersonHandler)
 	p.PersonService = services.NewPersonService(db)
+
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/course", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) { c.GetAllCourses(w, r) })

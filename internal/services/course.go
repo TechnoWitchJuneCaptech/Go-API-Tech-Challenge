@@ -1,5 +1,7 @@
 package services
 
+//course.go defines the service functions and logic used by RealCourseService structs to query a db, and a CourseService interface for testing.
+
 import (
 	"database/sql"
 	"fmt"

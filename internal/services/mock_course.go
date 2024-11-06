@@ -1,5 +1,7 @@
 package services
 
+//mock_course.go is used for testing purposes in ../handlers/course_test.go
+
 import (
 	"tech-challenge/internal/models"
 

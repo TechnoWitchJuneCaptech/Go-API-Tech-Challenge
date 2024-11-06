@@ -1,5 +1,7 @@
 package handlers
 
+//helpers.go defines miscellaneous helper functions used in ../handlers/* and ../services/*
+
 import (
 	"fmt"
 	"log"
@@ -10,7 +12,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// turns name into a firstName and lastName for querying.
+// turns name into firstName and lastName for querying. Will return an error if there's not two names or name is empty.
 func formatName(name string) (firstName string, lastName string, err error) {
 	firstName, lastName = "", ""
 	if name != "" {
@@ -24,10 +26,14 @@ func formatName(name string) (firstName string, lastName string, err error) {
 	}
 	return "", "", fmt.Errorf("name is empty")
 }
+
+// custom validation function for course object
 func ValidateType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	return value == "professor" || value == "student"
 }
+
+// returns whether all values in input are unique
 func areUnique(input []int) bool {
 	result := make(map[int]int)
 	for _, val := range input {

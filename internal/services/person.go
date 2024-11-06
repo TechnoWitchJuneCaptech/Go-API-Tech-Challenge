@@ -1,5 +1,14 @@
 package services
 
+/*
+course.go defines the service functions and logic used by RealPersonService structs to query a db, and a PersonService interface for testing.
+
+!!!---!!!---WARNING---!!!---!!!
+
+UpdatePerson() and DeletePerson() functions are defined as specified in the tech challenge github repo. However, querying based off
+of a non-unique value (firstName and lastName) is poor design that would lead to unintended outcomes for real users.
+I recommend refactoring to query these by the student's ID like models.Course objects.
+*/
 import (
 	"database/sql"
 	"fmt"

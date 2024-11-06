@@ -1,5 +1,7 @@
 package services
 
+//mock_person.go is used for testing purposes in ../handlers/person_test.go
+
 import (
 	"tech-challenge/internal/models"
 

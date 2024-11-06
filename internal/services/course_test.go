@@ -1,5 +1,8 @@
 package services
 
+//course_test.go tests ./course.go. This file does not fully utilize table based tests (TBT) because the number of SQL queries is highly variable for some service functions.
+//While TBTs would reduce repeated code, they would contain an overabundance of if statements and be less accessible to understand.
+
 import (
 	"database/sql/driver"
 	"errors"

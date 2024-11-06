@@ -1,5 +1,7 @@
 package services
 
+//helpers.go defines helper functions used by ./course.go and ./person.go.
+
 import "database/sql"
 
 func dbQueryGetPeopleByName(firstName string, lastName string, db *sql.DB) (*sql.Rows, error) {
@@ -27,11 +29,11 @@ func dbQueryGetPeople(db *sql.DB) (*sql.Rows, error) {
 	return db.Query(`SELECT * FROM "person"`)
 }
 
-// returns an []int of values that are in old, but not in new. New may contain values not in old, which should be ignored. items in old are unique.
+// returns an []int of values that are in old, but not in new. New may contain values not in old. it is assumed items in old are unique
 func getDifference(old []int, new []int) []int {
-	//we add all old ones to the map with a value of 2.
-	//we then add all new ones to the map with a value of 1
-	//all keys in the list equal to 2 are in old but not new
+	//1. we increment all values in old as keys to a map[int][int] with a value of 2.
+	//2. we add all values in new to the map with a value of 1
+	//3. all keys in the list equal to 2 are in old but not new. return a slice of them.
 	list := make(map[int]int)
 	for _, val := range old {
 		list[val] += 2

@@ -1,5 +1,7 @@
 package config
 
+//config.go defines a struct that loads environmental variables from .env
+
 import (
 	"fmt"
 	"os"
@@ -21,10 +23,6 @@ type Config struct {
 
 func NewConfig() (Config, error) {
 	godotenv.Load()
-	//if err != nil {
-	//	log.Fatal("Error loading .env file")
-	//	return Config{}, err
-	//}
 
 	newConfig := Config{
 		Env:                  os.Getenv("ENV"),

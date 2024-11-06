@@ -1,5 +1,7 @@
 package handlers
 
+//course_test.go tests ./course.go utilizing table based testing best practices.
+
 import (
 	"bytes"
 	"context"

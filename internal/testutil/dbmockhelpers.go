@@ -1,5 +1,10 @@
 package testutil
 
+/*mock_course.go is used for testing purposes in
+../services/course_test.go,
+../services/person_test.go,
+../services/setup_test.go,
+*/
 import (
 	"database/sql/driver"
 	"fmt"

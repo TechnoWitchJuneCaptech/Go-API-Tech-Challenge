@@ -1,5 +1,7 @@
 package database
 
+//database.go initiates a connection to the local sql DB.
+
 import (
 	"database/sql"
 	"log"

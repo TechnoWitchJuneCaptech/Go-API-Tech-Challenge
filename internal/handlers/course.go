@@ -1,5 +1,7 @@
 package handlers
 
+//course.go defines the handler logic of all /api/course http endpoints.
+
 import (
 	"encoding/json"
 	"net/http"
